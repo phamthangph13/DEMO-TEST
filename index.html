@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Thi Trực Tuyến</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn-start {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-start:hover {
+            background-color: #2980b9;
+        }
+        .warning {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hệ Thống Thi Trực Tuyến</h1>
+        <p>Sẵn sàng bắt đầu bài thi của bạn? Sau khi nhấn nút "Thi", hệ thống sẽ chuyển sang chế độ toàn màn hình.</p>
+        <button class="btn-start" id="startExam">Thi</button>
+        <p class="warning">Lưu ý: Việc thoát khỏi chế độ toàn màn hình hoặc chuyển sang tab khác sẽ được ghi nhận là gian lận.</p>
+    </div>
+
+    <script>
+        document.getElementById('startExam').addEventListener('click', function() {
+            // Request fullscreen before navigating
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().then(() => {
+                    window.location.href = 'test.html';
+                }).catch(() => {
+                    window.location.href = 'test.html';
+                });
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+                window.location.href = 'test.html';
+            } else if (document.documentElement.msRequestFullscreen) {
+                document.documentElement.msRequestFullscreen();
+                window.location.href = 'test.html';
+            } else {
+                window.location.href = 'test.html';
+            }
+        });
+    </script>
+</body>
+</html> 

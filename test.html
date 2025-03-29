@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Thi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .exam-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .question {
+            margin-bottom: 30px;
+        }
+        .question h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        .option {
+            margin-bottom: 10px;
+        }
+        .option label {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .warning-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .warning-content {
+            background-color: #e74c3c;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+        }
+        .warning-content h2 {
+            margin-top: 0;
+        }
+        .btn-submit {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+        }
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="exam-container">
+        <h1>Bài Thi Trực Tuyến</h1>
+        <div class="timer">Thời gian: <span id="time">45:00</span></div>
+        
+        <div class="question">
+            <h3>Câu hỏi 1: Đâu là thủ đô của Việt Nam?</h3>
+            <div class="options">
+                <div class="option">
+                    <input type="radio" id="q1a" name="q1" value="a">
+                    <label for="q1a">Hà Nội</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q1b" name="q1" value="b">
+                    <label for="q1b">TP Hồ Chí Minh</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q1c" name="q1" value="c">
+                    <label for="q1c">Đà Nẵng</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q1d" name="q1" value="d">
+                    <label for="q1d">Huế</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="question">
+            <h3>Câu hỏi 2: Việt Nam có bao nhiêu tỉnh thành?</h3>
+            <div class="options">
+                <div class="option">
+                    <input type="radio" id="q2a" name="q2" value="a">
+                    <label for="q2a">54</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q2b" name="q2" value="b">
+                    <label for="q2b">61</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q2c" name="q2" value="c">
+                    <label for="q2c">63</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="q2d" name="q2" value="d">
+                    <label for="q2d">65</label>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn-submit" id="submitExam">Nộp Bài</button>
+    </div>
+    
+    <div class="warning-modal" id="warningModal">
+        <div class="warning-content">
+            <h2>CẢNH BÁO GIAN LẬN!</h2>
+            <p>Bạn đã thoát khỏi chế độ toàn màn hình hoặc chuyển sang tab khác.</p>
+            <p>Hành động này sẽ được ghi nhận là gian lận.</p>
+            <button id="returnToFullscreen" style="background-color: #2ecc71; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 15px;">Quay lại chế độ toàn màn hình</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Request fullscreen when page loads
+            const requestFullscreen = function() {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+            };
+            
+            // Enter fullscreen
+            requestFullscreen();
+            
+            const warningModal = document.getElementById('warningModal');
+            let cheatingDetected = false;
+            
+            // Track fullscreen changes
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            function handleFullscreenChange() {
+                if (!document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.msFullscreenElement) {
+                    showWarning();
+                    cheatingDetected = true;
+                } else {
+                    hideWarning();
+                }
+            }
+            
+            // Track tab visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState !== 'visible') {
+                    showWarning();
+                    cheatingDetected = true;
+                }
+            });
+            
+            function showWarning() {
+                warningModal.style.display = 'flex';
+                // Log the cheating attempt
+                console.log('Cheating detected: ' + new Date().toLocaleString());
+                
+                // Add event listener to button
+                document.getElementById('returnToFullscreen').addEventListener('click', function() {
+                    requestFullscreen();
+                });
+            }
+            
+            function hideWarning() {
+                warningModal.style.display = 'none';
+            }
+            
+            // Handle submit
+            document.getElementById('submitExam').addEventListener('click', function() {
+                if (cheatingDetected) {
+                    alert('Bài thi của bạn đã bị đánh dấu do có hành vi gian lận!');
+                } else {
+                    alert('Nộp bài thành công!');
+                }
+                window.location.href = 'index.html';
+            });
+            
+            // Timer functionality
+            let timeLeft = 45 * 60; // 45 minutes in seconds
+            const timerElement = document.getElementById('time');
+            
+            const timer = setInterval(function() {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Hết thời gian! Bài thi sẽ được nộp tự động.');
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
