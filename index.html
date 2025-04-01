@@ -61,23 +61,12 @@
 
     <script>
         document.getElementById('startExam').addEventListener('click', function() {
-            // Request fullscreen before navigating
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().then(() => {
-                    window.location.href = 'test.html';
-                }).catch(() => {
-                    window.location.href = 'test.html';
-                });
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-                window.location.href = 'test.html';
-            } else if (document.documentElement.msRequestFullscreen) {
-                document.documentElement.msRequestFullscreen();
-                window.location.href = 'test.html';
-            } else {
-                window.location.href = 'test.html';
-            }
+            // Set a session flag to indicate that the exam should start in fullscreen
+            sessionStorage.setItem('startExam', 'true');
+            
+            // Navigate to test page
+            window.location.href = 'test.html';
         });
     </script>
 </body>
-</html> 
+</html>

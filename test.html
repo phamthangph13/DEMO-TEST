@@ -150,22 +150,55 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Request fullscreen when page loads
-            const requestFullscreen = function() {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
-            };
-            
-            // Enter fullscreen
-            requestFullscreen();
-            
+            // Variables
             const warningModal = document.getElementById('warningModal');
             let cheatingDetected = false;
+            let fullscreenAttempted = false;
+            
+            // Function to request fullscreen
+            function requestFullscreen() {
+                return new Promise((resolve, reject) => {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().then(resolve).catch(reject);
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                        resolve();
+                    } else if (document.documentElement.msRequestFullscreen) {
+                        document.documentElement.msRequestFullscreen();
+                        resolve();
+                    } else {
+                        reject('Fullscreen not supported');
+                    }
+                });
+            }
+            
+            // Enter fullscreen with a delay to ensure it works consistently
+            function enterFullscreen() {
+                fullscreenAttempted = true;
+                
+                // First attempt
+                requestFullscreen().catch(() => {
+                    // If first attempt fails, try again after a short delay
+                    setTimeout(() => {
+                        requestFullscreen().catch(err => {
+                            console.error('Failed to enter fullscreen mode:', err);
+                            showWarning();
+                        });
+                    }, 500);
+                });
+            }
+            
+            // Only enter fullscreen if coming from the exam starting page
+            if (sessionStorage.getItem('startExam') === 'true') {
+                // Clear the flag
+                sessionStorage.removeItem('startExam');
+                
+                // Slight delay to ensure DOM is fully loaded
+                setTimeout(enterFullscreen, 100);
+            } else {
+                // If someone tries to access the test page directly, redirect to index
+                window.location.href = 'index.html';
+            }
             
             // Track fullscreen changes
             document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -178,8 +211,11 @@
                     !document.webkitFullscreenElement && 
                     !document.mozFullScreenElement && 
                     !document.msFullscreenElement) {
-                    showWarning();
-                    cheatingDetected = true;
+                    // Only show warning if we've attempted fullscreen before
+                    if (fullscreenAttempted) {
+                        showWarning();
+                        cheatingDetected = true;
+                    }
                 } else {
                     hideWarning();
                 }
@@ -193,6 +229,35 @@
                 }
             });
             
+            // Block Alt+Tab by monitoring key events
+            document.addEventListener('keydown', function(e) {
+                // Alt+Tab (Alt + key code 9)
+                if (e.altKey && e.keyCode === 9) {
+                    e.preventDefault();
+                    showWarning();
+                    cheatingDetected = true;
+                    return false;
+                }
+                
+                // Also block other potentially problematic combinations
+                if (
+                    // Alt+F4
+                    (e.altKey && e.keyCode === 115) ||
+                    // Windows Key
+                    e.keyCode === 91 || e.keyCode === 92 ||
+                    // Ctrl+Alt+Delete can't be prevented by JavaScript
+                    // Alt+Esc
+                    (e.altKey && e.keyCode === 27) ||
+                    // F11 (another fullscreen method)
+                    e.keyCode === 122
+                ) {
+                    e.preventDefault();
+                    showWarning();
+                    cheatingDetected = true;
+                    return false;
+                }
+            });
+            
             function showWarning() {
                 warningModal.style.display = 'flex';
                 // Log the cheating attempt
@@ -200,7 +265,7 @@
                 
                 // Add event listener to button
                 document.getElementById('returnToFullscreen').addEventListener('click', function() {
-                    requestFullscreen();
+                    enterFullscreen();
                 });
             }
             
@@ -239,4 +304,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
